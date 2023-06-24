@@ -192,7 +192,8 @@ class MainActivity : AppCompatActivity() {
                 }
 
             val recorder = Recorder.Builder()
-                .setQualitySelector(QualitySelector.from(Quality.HIGHEST))
+                .setQualitySelector(QualitySelector.from(Quality.HIGHEST,
+                    FallbackStrategy.higherQualityOrLowerThan(Quality.SD)))
                 .build()
             videoCapture = VideoCapture.withOutput(recorder)
 
