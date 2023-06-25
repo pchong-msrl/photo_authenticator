@@ -42,10 +42,12 @@ import java.util.Locale
 import com.google.mediapipe.tasks.core.BaseOptions
 import com.google.mediapipe.tasks.vision.gesturerecognizer.GestureRecognizerResult
 import android.content.Context
+import android.media.MediaMetadataRetriever
 import android.net.Uri
 
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
+import java.io.File
 
 typealias LumaListener = (luma: Double) -> Unit
 
@@ -110,6 +112,8 @@ class MainActivity : AppCompatActivity() {
                 contentValues)
             .build()
 
+
+
         // Set up image capture listener, which is triggered after photo has
         // been taken
         imageCapture.takePicture(
@@ -127,13 +131,19 @@ class MainActivity : AppCompatActivity() {
 //                    Log.d(TAG, msg)
 //                }
 
+
                 override fun onImageSaved(output: ImageCapture.OutputFileResults){
                     val msg = "Photo capture succeeded: ${output.savedUri}"
                     Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
                     Log.d(TAG, msg)
 
+                    //return the file from the URI
+                    var imagesavedpath = extractVideoLocationInfo(output.savedUri)
+                    Log.d(TAG, "imagesavedpath: ${imagesavedpath}")
+
                     // Get the file from the URI
-                    val file = Uri.parse((output.savedUri?.path.toString()))
+                    //   val file = Uri.fromFile(File(output.savedUri?.path))
+                    val file =  Uri.fromFile(File("/storage/emulated/0/Pictures/CameraX-Image/2023-06-25-20-53-02-108.jpg"))
 
                     // Create a reference to a location in the cloud to upload the photo
                     val imageRef = storageRef.child("images/${file.lastPathSegment}")
@@ -149,6 +159,30 @@ class MainActivity : AppCompatActivity() {
                         // It can also be used to get a URL for the uploaded content.
                         Log.d(TAG, "Upload successful")
                     }
+                }
+
+                val retriever = MediaMetadataRetriever()
+                val context = applicationContext
+
+
+                private fun extractVideoLocationInfo(Uri: Uri?) {
+                    try {
+                        retriever.setDataSource(context, Uri)
+                    } catch (e: RuntimeException) {
+                        Log.e(TAG, "Cannot retrieve video file", e)
+                    }
+                    // Metadata uses a standardized format.
+                    val locationMetadata: String? =
+                        retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_LOCATION)
+                }
+
+                private fun createFileFromContentUri(contentUri: Uri?): File {
+                    val cursor = contentResolver.query(contentUri!!, null, null, null, null)
+                    cursor!!.moveToFirst()
+                    val index = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA)
+                    val file = File(cursor.getString(index))
+                    cursor.close()
+                    return file
                 }
 
 
