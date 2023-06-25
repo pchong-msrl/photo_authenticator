@@ -44,8 +44,16 @@ import com.google.mediapipe.tasks.vision.gesturerecognizer.GestureRecognizerResu
 import android.content.Context
 import android.media.MediaMetadataRetriever
 import android.net.Uri
+import androidx.core.net.toUri
+import com.google.firebase.auth.FirebaseAuth
 
+
+import com.google.firebase.auth.EmailAuthProvider
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+
+
 import com.google.firebase.storage.ktx.storage
 import java.io.File
 
@@ -69,10 +77,16 @@ class MainActivity : AppCompatActivity() {
     private val storage = Firebase.storage
     private val storageRef = storage.reference
 
+    private lateinit var auth: FirebaseAuth
+
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewBinding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(viewBinding.root)
+
+        auth = Firebase.auth
 
         // Request camera permissions
         if (allPermissionsGranted()) {
@@ -81,6 +95,11 @@ class MainActivity : AppCompatActivity() {
             requestPermissions()
         }
 
+        // Check if user is signed in (non-null) and update UI accordingly.
+        val currentUser = auth.currentUser
+        updateUI(currentUser)
+
+
         // Set up the listeners for take photo and video capture buttons
         viewBinding.imageCaptureButton.setOnClickListener { takePhoto() }
         viewBinding.videoCaptureButton.setOnClickListener { captureVideo() }
@@ -88,6 +107,31 @@ class MainActivity : AppCompatActivity() {
         cameraExecutor = Executors.newSingleThreadExecutor()
     }
 
+    private fun updateUI(user: FirebaseUser?) {
+    }
+    private fun signInAnonymously() {
+        // [START signin_anonymously]
+        auth.signInAnonymously()
+            .addOnCompleteListener(this) { task ->
+                if (task.isSuccessful) {
+                    // Sign in success, update UI with the signed-in user's information
+                    Log.d(TAG, "signInAnonymously:success")
+                    val user = auth.currentUser
+                    updateUI(user)
+                } else {
+                    // If sign in fails, display a message to the user.
+                    Log.w(TAG, "signInAnonymously:failure", task.exception)
+                    Toast.makeText(
+                        baseContext,
+                        "Authentication failed.",
+                        Toast.LENGTH_SHORT,
+                    ).show()
+                    updateUI(null)
+                }
+            }
+
+        // [END signin_anonymously]
+    }
     private fun takePhoto() {
         // Get a stable reference of the modifiable image capture use case
         val imageCapture = imageCapture ?: return
@@ -132,24 +176,33 @@ class MainActivity : AppCompatActivity() {
 //                }
 
 
+
+
                 override fun onImageSaved(output: ImageCapture.OutputFileResults){
                     val msg = "Photo capture succeeded: ${output.savedUri}"
                     Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
                     Log.d(TAG, msg)
 
-                    //return the file from the URI
-                    var imagesavedpath = extractVideoLocationInfo(output.savedUri)
-                    Log.d(TAG, "imagesavedpath: ${imagesavedpath}")
+
+
+
+
+//                    //return the file from the URI
+//                    var imagesavedpath = extractVideoLocationInfo(output.savedUri)
+//                    Log.d(TAG, "imagesavedpath: ${imagesavedpath}")
 
                     // Get the file from the URI
-                    //   val file = Uri.fromFile(File(output.savedUri?.path))
-                    val file =  Uri.fromFile(File("/storage/emulated/0/Pictures/CameraX-Image/2023-06-25-20-53-02-108.jpg"))
+                       val file = Uri.fromFile(File(output.savedUri?.path))
 
                     // Create a reference to a location in the cloud to upload the photo
                     val imageRef = storageRef.child("images/${file.lastPathSegment}")
+//                    val file =  Uri.fromFile(File("/storage/emulated/0/Pictures/CameraX-Image/2023-06-25-20-53-02-108.jpg"))
+                    val file2 = createFileFromContentUri(output.savedUri)
+
+
 
                     // Upload the file to Firebase Storage
-                    val uploadTask = imageRef.putFile(file)
+                    val uploadTask = imageRef.putFile(file2.toUri())
 
                     // Register observers to listen for when the download is done or if it fails
                     uploadTask.addOnFailureListener {
@@ -259,6 +312,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
     }
+
 
     private fun startCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
