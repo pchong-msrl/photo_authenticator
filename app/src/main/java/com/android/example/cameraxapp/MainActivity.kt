@@ -44,6 +44,9 @@ import com.google.mediapipe.tasks.vision.gesturerecognizer.GestureRecognizerResu
 import android.content.Context
 import android.net.Uri
 
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.ktx.storage
+
 typealias LumaListener = (luma: Double) -> Unit
 
 class MainActivity : AppCompatActivity() {
@@ -60,6 +63,9 @@ class MainActivity : AppCompatActivity() {
     private var imageAnalyzer: ImageAnalysis? = null
     private lateinit var backgroundExecutor: ExecutorService
 
+    // Get a reference to Firebase storage
+    private val storage = Firebase.storage
+    private val storageRef = storage.reference
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -95,6 +101,8 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+
+
         // Create output options object which contains file + metadata
         val outputOptions = ImageCapture.OutputFileOptions
             .Builder(contentResolver,
@@ -112,12 +120,37 @@ class MainActivity : AppCompatActivity() {
                     Log.e(TAG, "Photo capture failed: ${exc.message}", exc)
                 }
 
-                override fun
-                        onImageSaved(output: ImageCapture.OutputFileResults){
+//                override fun
+//                        onImageSaved(output: ImageCapture.OutputFileResults){
+//                    val msg = "Photo capture succeeded: ${output.savedUri}"
+//                    Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
+//                    Log.d(TAG, msg)
+//                }
+
+                override fun onImageSaved(output: ImageCapture.OutputFileResults){
                     val msg = "Photo capture succeeded: ${output.savedUri}"
                     Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
                     Log.d(TAG, msg)
+
+                    // Get the file from the URI
+                    val file = Uri.parse((output.savedUri?.path.toString()))
+
+                    // Create a reference to a location in the cloud to upload the photo
+                    val imageRef = storageRef.child("images/${file.lastPathSegment}")
+
+                    // Upload the file to Firebase Storage
+                    val uploadTask = imageRef.putFile(file)
+
+                    // Register observers to listen for when the download is done or if it fails
+                    uploadTask.addOnFailureListener {
+                        // Handle unsuccessful uploads
+                    }.addOnSuccessListener { taskSnapshot ->
+                        // taskSnapshot.metadata contains file metadata such as size, content-type, etc.
+                        // It can also be used to get a URL for the uploaded content.
+                        Log.d(TAG, "Upload successful")
+                    }
                 }
+
 
 
             }
