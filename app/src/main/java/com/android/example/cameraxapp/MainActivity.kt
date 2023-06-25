@@ -44,6 +44,7 @@ import com.google.mediapipe.tasks.vision.gesturerecognizer.GestureRecognizerResu
 import android.content.Context
 import android.media.MediaMetadataRetriever
 import android.net.Uri
+import android.widget.TextView
 import androidx.core.net.toUri
 import com.google.firebase.auth.FirebaseAuth
 
@@ -337,13 +338,18 @@ class MainActivity : AppCompatActivity() {
             imageCapture = ImageCapture.Builder()
                 .build()
 
-//            val imageAnalyzer = ImageAnalysis.Builder()
-//                .build()
-//                .also {
-//                    it.setAnalyzer(cameraExecutor, LuminosityAnalyzer { luma ->
-//                        Log.d(TAG, "Average luminosity: $luma")
-//                    })
-//                }
+            val textViewLuma: TextView = findViewById(R.id.textViewLuma)
+
+            val imageAnalyzer = ImageAnalysis.Builder()
+                .build()
+                .also {
+                    it.setAnalyzer(cameraExecutor, LuminosityAnalyzer { luma ->
+                        runOnUiThread {
+                            textViewLuma.text = "Luminosity: $luma"
+                        }
+                        Log.d(TAG, "Average luminosity: $luma")
+                    })
+                }
 
             // Select back camera as a default
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
@@ -354,7 +360,7 @@ class MainActivity : AppCompatActivity() {
 
                 // Bind use cases to camera
                 cameraProvider.bindToLifecycle(
-                    this, cameraSelector, preview, imageCapture, videoCapture)
+                    this, cameraSelector, preview, imageCapture,  imageAnalyzer)
 
 
             } catch(exc: Exception) {
