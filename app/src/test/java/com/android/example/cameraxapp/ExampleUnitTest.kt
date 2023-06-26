@@ -2,12 +2,16 @@ package com.android.example.cameraxapp
 
 import android.content.ContentValues
 import android.provider.MediaStore
+import androidx.camera.core.ImageProxy
 import org.junit.Test
 import org.junit.Assert.*
 import java.text.SimpleDateFormat
 import java.util.Locale
 import org.mockito.Mockito.*
 import java.util.concurrent.Executor
+import org.junit.Assert.assertEquals
+import org.mockito.ArgumentMatchers.any
+import java.nio.ByteBuffer
 
 
 class MainActivityTest {
@@ -79,5 +83,33 @@ class MainActivityTest {
         verify(cameraExecutor, times(1)).shutdown()
     }
 
+    class LuminosityAnalyzerTest {
+
+        interface MockLumaListener : LuminosityAnalyzer.LumaListener {
+            fun invoke(luma: Double)
+        }
+
+        @Test
+        fun analyze() {
+            // Arrange
+            val listener = mock(MockLumaListener::class.java)
+            val analyzer = LuminosityAnalyzer(listener)
+            val buffer = ByteBuffer.allocate(3)
+            buffer.put(0, 100.toByte())
+            buffer.put(1, 150.toByte())
+            buffer.put(2, 200.toByte())
+            val imageProxy: ImageProxy = mock(ImageProxy::class.java)
+            val planeProxy: ImageProxy.PlaneProxy = mock(ImageProxy.PlaneProxy::class.java)
+            `when`(planeProxy.buffer).thenReturn(buffer)
+            `when`(imageProxy.planes).thenReturn(arrayOf(planeProxy))
+
+            // Act
+            analyzer.analyze(imageProxy)
+
+            // Assert
+            verify(listener, times(1)).invoke(any())
+            verify(imageProxy, times(1)).close()
+        }
+    }
 
 }
