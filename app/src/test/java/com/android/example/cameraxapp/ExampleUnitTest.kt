@@ -106,7 +106,7 @@ class MainActivityTest {
             // Act
             analyzer.analyze(imageProxy)
 
-            // Assert
+            // Assert - verify that the listener was called with the correct value
             verify(listener, times(1)).invoke(any())
             verify(imageProxy, times(1)).close()
         }
