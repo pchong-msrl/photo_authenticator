@@ -69,7 +69,7 @@ class MainActivityTest {
 
     @Test
     fun onDestroy() {
-        // Arrange
+        // Arrange - create a mock Executor and a MainActivity with that Executor
         val cameraExecutor = mock(Executor::class.java)
         val mainActivity = MainActivity().apply {
             this.cameraExecutor = cameraExecutor
