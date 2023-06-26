@@ -6,6 +6,9 @@ import org.junit.Test
 import org.junit.Assert.*
 import java.text.SimpleDateFormat
 import java.util.Locale
+import org.mockito.Mockito.*
+import java.util.concurrent.Executor
+
 
 class MainActivityTest {
 
@@ -27,6 +30,53 @@ class MainActivityTest {
 
         // Assert
         assertEquals(expectedContentValues, resultContentValues)
+    }
+
+    @Test
+    fun requestPermissions() {
+        // Arrange
+        val activityResultLauncher = mock(ActivityResultLauncher::class.java)
+        val mainActivity = MainActivity().apply {
+            this.activityResultLauncher = activityResultLauncher
+        }
+
+        // Act
+        mainActivity.requestPermissions()
+
+        // Assert
+        verify(activityResultLauncher, times(1)).launch(MainActivity.REQUIRED_PERMISSIONS)
+    }
+
+    @Test
+    fun allPermissionsGranted() {
+        // Arrange
+        val contextCompat = mock(ContextCompat::class.java)
+        val mainActivity = MainActivity()
+
+        // When all permissions are granted
+        `when`(contextCompat.checkSelfPermission(any(), anyString())).thenReturn(PackageManager.PERMISSION_GRANTED)
+
+        // Act
+        val permissionsGranted = mainActivity.allPermissionsGranted()
+
+        // Assert
+        assertTrue(permissionsGranted)
+    }
+
+    @Test
+    fun onDestroy() {
+        // Arrange
+        val cameraExecutor = mock(Executor::class.java)
+        val mainActivity = MainActivity().apply {
+            this.cameraExecutor = cameraExecutor
+        }
+
+        // Act
+        //the function was getting protected access
+        mainActivity.onDestroy()
+
+        // Assert
+        verify(cameraExecutor, times(1)).shutdown()
     }
 
 
