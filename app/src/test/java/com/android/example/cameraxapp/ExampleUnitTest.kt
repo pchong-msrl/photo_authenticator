@@ -4,36 +4,30 @@ import android.content.ContentValues
 import android.provider.MediaStore
 import org.junit.Test
 import org.junit.Assert.*
-import org.mockito.Mockito.*
 import java.text.SimpleDateFormat
 import java.util.Locale
 
 class MainActivityTest {
 
     @Test
-    fun takePhoto() {
+    fun generateContentValuesTest() {
+
+        var FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
         // Arrange
-        val imageCapture = mock(ImageCapture::class.java) // Assuming ImageCapture is a class you've defined.
-        val mainActivity = MainActivity().apply {
-            this.imageCapture = imageCapture
-        }
-        val name = SimpleDateFormat(MainActivity.FILENAME_FORMAT, Locale.US)
+        val mainActivity = MainActivity()
+        val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US)
             .format(System.currentTimeMillis())
         val expectedContentValues = ContentValues().apply {
             put(MediaStore.MediaColumns.DISPLAY_NAME, name)
             put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
-            if(Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
-                put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/CameraX-Image")
-            }
+            put(MediaStore.MediaColumns.RELATIVE_PATH, "DCIM/CameraX App")
         }
-
         // Act
-        mainActivity.takePhoto()
+        val resultContentValues = mainActivity.generateContentValues(name)
 
         // Assert
-        verify(imageCapture, times(1)).takePicture(any(), any(), any())
-        // Assuming the `takePicture` method is called within your `takePhoto()` method.
-        // Note: Make sure to customize the verify assertions based on your actual code.
-        assertEquals(expectedContentValues, mainActivity.contentValues)
+        assertEquals(expectedContentValues, resultContentValues)
     }
+
+
 }
