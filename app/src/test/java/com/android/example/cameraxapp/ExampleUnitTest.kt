@@ -103,7 +103,7 @@ class MainActivityTest {
             `when`(planeProxy.buffer).thenReturn(buffer)
             `when`(imageProxy.planes).thenReturn(arrayOf(planeProxy))
 
-            // Act
+            // Act - call the function under test
             analyzer.analyze(imageProxy)
 
             // Assert - verify that the listener was called with the correct value
