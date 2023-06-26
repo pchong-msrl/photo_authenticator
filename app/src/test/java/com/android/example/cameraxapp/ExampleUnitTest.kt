@@ -1,17 +1,27 @@
-package com.android.example.cameraxapp
-
+import android.content.ContentValues
+import androidx.camera.core.ImageCapture
 import org.junit.Test
+import org.mockito.Mockito.mock
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
 
-import org.junit.Assert.*
+class PhotoTakerTest {
 
-/**
- * Example local unit test, which will execute on the development machine (host).
- *
- * See [testing documentation](http://d.android.com/tools/testing).
- */
-class ExampleUnitTest {
     @Test
-    fun addition_isCorrect() {
-        assertEquals(4, 2 + 2)
+    fun testTakePhoto() {
+        // Prepare test data
+        val mockImageCapture: ImageCapture = mock()
+        val filenameFormat = "filename_format"
+        val mockContentValues: ContentValues = mock()
+
+        // Prepare object under test
+        val photoTaker: PhotoTaker = RealPhotoTaker()
+
+        // Execute function under test
+        photoTaker.takePhoto(mockImageCapture, filenameFormat, mockContentValues)
+
+        // Verify that expected interactions happened (not possible in this case, usually you would verify something here)
+        // verify(mockImageCapture).takePhoto(…) // etc.
     }
 }
+

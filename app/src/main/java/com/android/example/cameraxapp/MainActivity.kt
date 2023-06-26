@@ -109,12 +109,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateUI(user: FirebaseUser?) {
-    }
-    private fun signInAnonymously() {
-        // [START signin_anonymously]
-        auth.signInAnonymously()
-            .addOnCompleteListener(this) { task ->
-                if (task.isSuccessful) {
+                    }
+                    private fun signInAnonymously() {
+                        // [START signin_anonymously]
+                        auth.signInAnonymously()
+                            .addOnCompleteListener(this) { task ->
+                                if (task.isSuccessful) {
                     // Sign in success, update UI with the signed-in user's information
                     Log.d(TAG, "signInAnonymously:success")
                     val user = auth.currentUser
@@ -157,7 +157,7 @@ class MainActivity : AppCompatActivity() {
                 contentValues)
             .build()
 
-
+//        signInAnonymously()
 
         // Set up image capture listener, which is triggered after photo has
         // been taken
@@ -199,7 +199,6 @@ class MainActivity : AppCompatActivity() {
                     val imageRef = storageRef.child("images/${file.lastPathSegment}")
 //                    val file =  Uri.fromFile(File("/storage/emulated/0/Pictures/CameraX-Image/2023-06-25-20-53-02-108.jpg"))
                     val file2 = createFileFromContentUri(output.savedUri)
-
 
 
                     // Upload the file to Firebase Storage
